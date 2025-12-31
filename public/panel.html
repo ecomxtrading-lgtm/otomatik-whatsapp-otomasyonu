@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mesaj Paneli</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-slate-50 text-slate-900">
+    <div class="max-w-6xl mx-auto px-4 py-8">
+      <header class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 class="text-2xl font-semibold text-slate-800">Karşılama Paneli</h1>
+          <p class="text-sm text-slate-500">
+            Kullanıcıları listele, filtrele ve WhatsApp üzerinden mesaj gönder.
+          </p>
+        </div>
+        <div class="flex gap-2">
+          <button
+            id="refreshBtn"
+            class="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-100"
+          >
+            Yenile
+          </button>
+        </div>
+      </header>
+
+      <section class="mt-6 grid gap-4 lg:grid-cols-[2fr_1fr]">
+        <div class="space-y-3">
+          <div class="flex flex-wrap gap-2">
+            <button
+              data-filter="all"
+              class="filter-btn rounded-md bg-slate-800 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-slate-700"
+            >
+              Tümü
+            </button>
+            <button
+              data-filter="marketing"
+              class="filter-btn rounded-md bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm ring-1 ring-slate-200 hover:bg-slate-100"
+            >
+              Sadece pazarlama izni
+            </button>
+            <button
+              data-filter="contact"
+              class="filter-btn rounded-md bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm ring-1 ring-slate-200 hover:bg-slate-100"
+            >
+              Sadece iletisim izni
+            </button>
+          </div>
+
+          <div class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+            <table class="min-w-full divide-y divide-slate-200">
+              <thead class="bg-slate-50">
+                <tr>
+                  <th class="px-3 py-2 text-left text-xs font-semibold text-slate-500">
+                    <input id="selectAll" type="checkbox" class="h-4 w-4 rounded border-slate-300 text-slate-700 focus:ring-slate-500" />
+                  </th>
+                  <th class="px-3 py-2 text-left text-xs font-semibold text-slate-500">
+                    Ad
+                  </th>
+                  <th class="px-3 py-2 text-left text-xs font-semibold text-slate-500">
+                    Email
+                  </th>
+                  <th class="px-3 py-2 text-left text-xs font-semibold text-slate-500">
+                    Telefon
+                  </th>
+                  <th class="px-3 py-2 text-left text-xs font-semibold text-slate-500">
+                    KVKK
+                  </th>
+                  <th class="px-3 py-2 text-left text-xs font-semibold text-slate-500">
+                    Pazarlama
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="userTable" class="divide-y divide-slate-100 bg-white">
+                <tr>
+                  <td colspan="6" class="px-3 py-4 text-sm text-slate-500">
+                    Yukleniyor...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="space-y-3">
+          <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+            <h2 class="text-lg font-semibold text-slate-800">Mesaj Gönder</h2>
+            <p class="mb-2 text-sm text-slate-500">
+              Seçili filtreye uyan tüm kullanıcılara WhatsApp mesajı gönderir. İstersen şablon ile gönder.
+            </p>
+            <label class="flex items-center gap-2 text-sm font-medium text-slate-700">
+              <input id="useTemplate" type="checkbox" class="h-4 w-4 rounded border-slate-300 text-slate-700 focus:ring-slate-500" />
+              Şablon ile gönder (template)
+            </label>
+            <div id="templateFields" class="mt-2 hidden space-y-2">
+              <div>
+                <label class="text-xs font-medium text-slate-600">Template Name</label>
+                <input
+                  id="templateName"
+                  type="text"
+                  class="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-800 shadow-sm focus:border-slate-400 focus:outline-none"
+                  value="jaspers_market_image_cta_v1"
+                />
+              </div>
+              <div>
+                <label class="text-xs font-medium text-slate-600">Language Code</label>
+                <input
+                  id="templateLanguage"
+                  type="text"
+                  class="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-800 shadow-sm focus:border-slate-400 focus:outline-none"
+                  value="en_US"
+                />
+              </div>
+              <div>
+                <label class="text-xs font-medium text-slate-600">Header Image URL (opsiyonel)</label>
+                <input
+                  id="templateHeaderImage"
+                  type="text"
+                  class="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-800 shadow-sm focus:border-slate-400 focus:outline-none"
+                  placeholder="https://..."
+                />
+              </div>
+              <p class="text-xs text-slate-500">
+                Serbest metin, alıcı daha önce yazdıysa veya 24s pencerede ise iletilir. Pencere kapalıysa şablon kullanın.
+              </p>
+            </div>
+            <label class="text-sm font-medium text-slate-700">Mesaj</label>
+            <textarea
+              id="messageInput"
+              rows="4"
+              class="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-800 shadow-sm focus:border-slate-400 focus:outline-none"
+              placeholder="Merhaba, kaydınız için teşekkürler..."
+            ></textarea>
+            <button
+              id="sendBtn"
+              class="mt-3 w-full rounded-md bg-emerald-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500 disabled:bg-emerald-300"
+            >
+              Gönder
+            </button>
+            <p id="sendStatus" class="mt-2 text-sm text-slate-500"></p>
+          </div>
+          <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+            <h2 class="text-lg font-semibold text-slate-800">Manuel Karşılama</h2>
+            <p class="mb-2 text-sm text-slate-500">
+              Tek seferlik WhatsApp ve e-posta gönderimi.
+            </p>
+            <div class="space-y-2">
+              <input
+                id="manualName"
+                type="text"
+                placeholder="Ad"
+                class="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-800 shadow-sm focus:border-slate-400 focus:outline-none"
+              />
+              <input
+                id="manualEmail"
+                type="email"
+                placeholder="Email"
+                class="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-800 shadow-sm focus:border-slate-400 focus:outline-none"
+              />
+              <input
+                id="manualPhone"
+                type="text"
+                placeholder="Telefon"
+                class="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-800 shadow-sm focus:border-slate-400 focus:outline-none"
+              />
+              <button
+                id="manualBtn"
+                class="w-full rounded-md bg-slate-700 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-slate-600 disabled:bg-slate-400"
+              >
+                Karşılama Gönder
+              </button>
+              <p id="manualStatus" class="text-sm text-slate-500"></p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      const userTable = document.getElementById("userTable");
+      const sendBtn = document.getElementById("sendBtn");
+      const sendStatus = document.getElementById("sendStatus");
+      const messageInput = document.getElementById("messageInput");
+      const manualBtn = document.getElementById("manualBtn");
+      const manualStatus = document.getElementById("manualStatus");
+      const filterButtons = Array.from(document.querySelectorAll(".filter-btn"));
+      const refreshBtn = document.getElementById("refreshBtn");
+      const selectAllEl = document.getElementById("selectAll");
+      const useTemplateEl = document.getElementById("useTemplate");
+      const templateFieldsEl = document.getElementById("templateFields");
+      const templateNameEl = document.getElementById("templateName");
+      const templateLanguageEl = document.getElementById("templateLanguage");
+      const templateHeaderImageEl = document.getElementById("templateHeaderImage");
+
+      let activeFilter = "all";
+      let usersData = [];
+      const selectedIds = new Set();
+
+      const normalizePhone = (raw) => {
+        if (!raw) return "-";
+        const digits = String(raw).replace(/\D/g, "");
+        if (!digits) return "-";
+        if (digits.startsWith("90") && digits.length === 12) return `+${digits}`;
+        if (digits.length === 10) return `+90${digits}`;
+        if (digits.startsWith("0") && digits.length === 11)
+          return `+90${digits.slice(1)}`;
+        if (digits.length >= 11) return `+${digits}`;
+        return digits;
+      };
+
+      const setActiveFilter = (filter) => {
+        activeFilter = filter;
+        filterButtons.forEach((btn) => {
+          if (btn.dataset.filter === filter) {
+            btn.classList.remove("bg-white", "text-slate-700", "ring-1", "ring-slate-200");
+            btn.classList.add("bg-slate-800", "text-white");
+          } else {
+            btn.classList.remove("bg-slate-800", "text-white");
+            btn.classList.add("bg-white", "text-slate-700", "ring-1", "ring-slate-200");
+          }
+        });
+      };
+
+      const updateSelectAllState = () => {
+        if (!usersData.length) {
+          selectAllEl.checked = false;
+          selectAllEl.indeterminate = false;
+          return;
+        }
+        const allSelected = usersData.every((u) => selectedIds.has(String(u.id)));
+        const someSelected = usersData.some((u) => selectedIds.has(String(u.id)));
+        selectAllEl.checked = allSelected;
+        selectAllEl.indeterminate = !allSelected && someSelected;
+      };
+
+      const bindRowCheckboxes = () => {
+        document.querySelectorAll(".row-check").forEach((cb) => {
+          cb.addEventListener("change", () => {
+            const id = cb.dataset.id;
+            if (!id) return;
+            if (cb.checked) selectedIds.add(id);
+            else selectedIds.delete(id);
+            updateSelectAllState();
+          });
+        });
+        updateSelectAllState();
+      };
+
+      const renderUsers = (users) => {
+        usersData = users || [];
+        if (!users.length) {
+          selectedIds.clear();
+          userTable.innerHTML =
+            '<tr><td colspan="6" class="px-3 py-4 text-sm text-slate-500">Kayıt bulunamadı.</td></tr>';
+          updateSelectAllState();
+          return;
+        }
+
+        userTable.innerHTML = users
+          .map(
+            (u) => `
+            <tr class="hover:bg-slate-50">
+              <td class="px-3 py-2 text-sm">
+                <input type="checkbox" class="row-check h-4 w-4 rounded border-slate-300 text-slate-700 focus:ring-slate-500"
+                  data-id="${u.id}"
+                  ${selectedIds.has(String(u.id)) ? "checked" : ""} />
+              </td>
+              <td class="px-3 py-2 text-sm text-slate-800">${u.name || "-"}</td>
+              <td class="px-3 py-2 text-sm text-slate-600">${u.email || "-"}</td>
+              <td class="px-3 py-2 text-sm text-slate-600">${normalizePhone(u.phone)}</td>
+              <td class="px-3 py-2 text-xs">${u.kvkk_accepted ? "✅" : "❌"}</td>
+              <td class="px-3 py-2 text-xs">${u.comms_accepted ? "✅" : "❌"}</td>
+            </tr>
+          `
+          )
+          .join("");
+        bindRowCheckboxes();
+      };
+
+      const fetchUsers = async () => {
+        userTable.innerHTML =
+          '<tr><td colspan="6" class="px-3 py-4 text-sm text-slate-500">Yükleniyor...</td></tr>';
+        try {
+          const res = await fetch(`/api/users?filter=${activeFilter}`);
+          const data = await res.json();
+          renderUsers(data.users || []);
+        } catch (error) {
+          userTable.innerHTML =
+            '<tr><td colspan="6" class="px-3 py-4 text-sm text-red-500">Liste getirilemedi.</td></tr>';
+        }
+      };
+
+      const sendMessage = async () => {
+        const message = messageInput.value.trim();
+        const useTemplate = useTemplateEl.checked;
+
+        if (!useTemplate && !message) {
+          sendStatus.textContent = "Mesaj metni gerekli.";
+          sendStatus.classList.add("text-red-500");
+          return;
+        }
+
+        sendBtn.disabled = true;
+        sendStatus.textContent = "Gönderiliyor...";
+        sendStatus.classList.remove("text-red-500");
+        sendStatus.classList.add("text-slate-500");
+
+        try {
+          const res = await fetch("/api/messages", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              filter: activeFilter,
+              message,
+              selectedIds: Array.from(selectedIds),
+              templateName: useTemplate ? templateNameEl.value.trim() : undefined,
+              templateLanguage: useTemplate ? templateLanguageEl.value.trim() : undefined,
+              templateHeaderImage: useTemplate
+                ? templateHeaderImageEl.value.trim()
+                : undefined,
+            }),
+          });
+          const data = await res.json();
+          if (res.ok) {
+            sendStatus.textContent = `Toplam ${data.total} kisiden ${data.sent} kisiye gonderildi.`;
+            sendStatus.classList.add("text-emerald-600");
+            sendStatus.classList.remove("text-red-500");
+            if (data.failures?.length) {
+              sendStatus.textContent += ` (Basarisiz: ${data.failures.length})`;
+              console.log("Basarisiz kayitlar", data.failures);
+            }
+          } else {
+            sendStatus.textContent = data.message || "Gonderim hatasi";
+            sendStatus.classList.add("text-red-500");
+          }
+        } catch (error) {
+          sendStatus.textContent = "Gonderim hatasi";
+          sendStatus.classList.add("text-red-500");
+        } finally {
+          sendBtn.disabled = false;
+        }
+      };
+
+      const manualSend = async () => {
+        const name = document.getElementById("manualName").value.trim();
+        const email = document.getElementById("manualEmail").value.trim();
+        const phone = document.getElementById("manualPhone").value.trim();
+
+        manualBtn.disabled = true;
+        manualStatus.textContent = "Gönderiliyor...";
+        manualStatus.classList.remove("text-red-500");
+        manualStatus.classList.add("text-slate-500");
+
+        try {
+          const res = await fetch("/api/manual-welcome", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, email, phone }),
+          });
+          const data = await res.json();
+          if (res.ok) {
+            manualStatus.textContent = `WhatsApp: ${data.whatsapp ? "OK" : "Yok"} | Mail: ${data.mail ? "OK" : "Yok"}`;
+            manualStatus.classList.add("text-emerald-600");
+            manualStatus.classList.remove("text-red-500");
+          } else {
+            manualStatus.textContent = data.message || "Hata";
+            manualStatus.classList.add("text-red-500");
+          }
+        } catch (error) {
+          manualStatus.textContent = "Gonderim hatasi";
+          manualStatus.classList.add("text-red-500");
+        } finally {
+          manualBtn.disabled = false;
+        }
+      };
+
+      filterButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          selectedIds.clear();
+          setActiveFilter(btn.dataset.filter);
+          fetchUsers();
+        });
+      });
+
+      selectAllEl.addEventListener("change", () => {
+        if (!usersData.length) return;
+        if (selectAllEl.checked) {
+          usersData.forEach((u) => u.id && selectedIds.add(String(u.id)));
+        } else {
+          usersData.forEach((u) => u.id && selectedIds.delete(String(u.id)));
+        }
+        document.querySelectorAll(".row-check").forEach((cb) => {
+          cb.checked = selectAllEl.checked;
+        });
+        selectAllEl.indeterminate = false;
+      });
+
+      refreshBtn.addEventListener("click", fetchUsers);
+      sendBtn.addEventListener("click", sendMessage);
+      manualBtn.addEventListener("click", manualSend);
+
+      useTemplateEl.addEventListener("change", () => {
+        templateFieldsEl.classList.toggle("hidden", !useTemplateEl.checked);
+      });
+
+      // ilk yukleme
+      fetchUsers();
+    </script>
+  </body>
+</html>
+
+
