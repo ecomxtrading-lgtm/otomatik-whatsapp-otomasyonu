@@ -97,13 +97,8 @@ router.post("/new-user", async (req, res) => {
       }
     }
 
-    // Şablon hâlâ başarısızsa fallback olarak metin mesajı dene
-    if (!templateResult.success) {
-      const fallback = await sendWelcomeWhatsApp(name || null, phone);
-      whatsappSuccess = fallback;
-    } else {
-      whatsappSuccess = true;
-    }
+    // Şablon hâlâ başarısızsa fallback'e gitme; sadece template sonucu döndür
+    whatsappSuccess = templateResult.success;
   }
   if (email) {
     mailSuccess = await sendWelcomeEmail(email, name || null);
