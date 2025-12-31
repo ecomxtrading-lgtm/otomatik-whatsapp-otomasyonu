@@ -1,6 +1,9 @@
 import { Router } from "express";
 import { supabase, SUPABASE_TABLE } from "../config/supabase";
-import { sendWelcomeWhatsApp } from "../services/whatsappService";
+import {
+  sendTemplateWhatsApp,
+  sendWelcomeWhatsApp,
+} from "../services/whatsappService";
 import { sendWelcomeEmail } from "../services/mailService";
 import { logger } from "../utils/logger";
 
@@ -45,7 +48,62 @@ router.post("/new-user", async (req, res) => {
   let mailSuccess = false;
 
   if (phone) {
-    whatsappSuccess = await sendWelcomeWhatsApp(name || null, phone);
+    // Onaylı template kullan (isim parametresi ile)
+    const templateName =
+      process.env.WHATSAPP_TEMPLATE_NAME || "jaspers_market_image_cta_v1";
+    const templateLanguage = process.env.WHATSAPP_TEMPLATE_LANG || "tr";
+    const headerImage = process.env.WHATSAPP_TEMPLATE_HEADER_IMAGE;
+
+    const headerComponent = headerImage
+      ? [
+          {
+            type: "header",
+            parameters: [
+              {
+                type: "image",
+                image: { link: headerImage },
+              },
+            ],
+          },
+        ]
+      : [];
+
+    // Önce body parametresi (isim) ile dene, hata alırsan paramsız tekrar dene
+    const componentsWithName: Array<Record<string, unknown>> = [
+      ...headerComponent,
+      {
+        type: "body",
+        parameters: [{ type: "text", text: name || "Misafir" }],
+      },
+    ];
+
+    let templateResult = await sendTemplateWhatsApp(
+      phone,
+      templateName,
+      templateLanguage,
+      componentsWithName
+    );
+
+    if (!templateResult.success) {
+      // Parametre uyumsuzluk hatalarında paramsız dene
+      const componentsWithoutBody = headerComponent;
+      if (componentsWithoutBody.length) {
+        templateResult = await sendTemplateWhatsApp(
+          phone,
+          templateName,
+          templateLanguage,
+          componentsWithoutBody
+        );
+      }
+    }
+
+    // Şablon hâlâ başarısızsa fallback olarak metin mesajı dene
+    if (!templateResult.success) {
+      const fallback = await sendWelcomeWhatsApp(name || null, phone);
+      whatsappSuccess = fallback;
+    } else {
+      whatsappSuccess = true;
+    }
   }
   if (email) {
     mailSuccess = await sendWelcomeEmail(email, name || null);
