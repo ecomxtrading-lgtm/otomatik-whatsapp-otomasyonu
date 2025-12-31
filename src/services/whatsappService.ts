@@ -26,7 +26,12 @@ const normalizePhone = (raw: string): string | null => {
 
 const buildWelcomeMessage = (name?: string) => {
   const safeName = name ? ` ${name}` : "";
-  return `Merhaba${safeName}! Kaydiniz icin tesekkur ederiz. Iletisim izinlerinle sana hizlica ulasacagiz.`;
+  // Link eklenerek tiklanabilir yapi saglanir.
+  return (
+    `Merhaba${safeName}, Prime skool'a hos geldiniz. ` +
+    `Talep etmis oldugunuz Master Class egitim setine buradan ulasabilirsiniz: https://primeskool.com ` +
+    `Ayrica ucretsiz toplulugumuza buradan katilabilirsiniz: https://primeskool.com`
+  );
 };
 
 type SendResult = { success: boolean; detail?: string };
