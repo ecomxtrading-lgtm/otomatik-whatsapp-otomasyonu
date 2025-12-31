@@ -50,7 +50,7 @@ router.post("/new-user", async (req, res) => {
   if (phone) {
     // Onaylı template kullan (isim parametresi ile)
     const templateName =
-      process.env.WHATSAPP_TEMPLATE_NAME || "jaspers_market_image_cta_v1";
+      process.env.WHATSAPP_TEMPLATE_NAME || "jaspers_market_order_confirmation_v1";
     const templateLanguage = process.env.WHATSAPP_TEMPLATE_LANG || "en_US";
     const headerImage = process.env.WHATSAPP_TEMPLATE_HEADER_IMAGE;
     const useBodyName =
