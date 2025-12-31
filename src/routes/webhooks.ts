@@ -53,6 +53,9 @@ router.post("/new-user", async (req, res) => {
       process.env.WHATSAPP_TEMPLATE_NAME || "jaspers_market_image_cta_v1";
     const templateLanguage = process.env.WHATSAPP_TEMPLATE_LANG || "en_US";
     const headerImage = process.env.WHATSAPP_TEMPLATE_HEADER_IMAGE;
+    const useBodyName =
+      (process.env.WHATSAPP_TEMPLATE_USE_NAME || "false").toLowerCase() ===
+      "true";
 
     const headerComponent = headerImage
       ? [
@@ -68,15 +71,18 @@ router.post("/new-user", async (req, res) => {
         ]
       : [];
 
-    // Önce body parametresi (isim) ile dene, hata alırsan paramsız tekrar dene
-    const componentsWithName: Array<Record<string, unknown>> = [
-      ...headerComponent,
-      {
-        type: "body",
-        parameters: [{ type: "text", text: name || "Misafir" }],
-      },
-    ];
+    // Önce header+body (isim) isteniyorsa dene, değilse doğrudan headersız/body'siz gönder
+    const componentsWithName: Array<Record<string, unknown>> = useBodyName
+      ? [
+          ...headerComponent,
+          {
+            type: "body",
+            parameters: [{ type: "text", text: name || "Misafir" }],
+          },
+        ]
+      : headerComponent;
 
+    // İlk deneme (body dahilse body'li, yoksa sadece header ya da boş)
     let templateResult = await sendTemplateWhatsApp(
       phone,
       templateName,
@@ -84,17 +90,15 @@ router.post("/new-user", async (req, res) => {
       componentsWithName
     );
 
-    if (!templateResult.success) {
-      // Parametre uyumsuzluk hatalarında paramsız dene
+    // Parametre uyuşmazlığında (132000) body'yi çıkarıp tekrar dene
+    if (!templateResult.success && useBodyName) {
       const componentsWithoutBody = headerComponent;
-      if (componentsWithoutBody.length) {
-        templateResult = await sendTemplateWhatsApp(
-          phone,
-          templateName,
-          templateLanguage,
-          componentsWithoutBody
-        );
-      }
+      templateResult = await sendTemplateWhatsApp(
+        phone,
+        templateName,
+        templateLanguage,
+        componentsWithoutBody
+      );
     }
 
     // Şablon hâlâ başarısızsa fallback'e gitme; sadece template sonucu döndür
